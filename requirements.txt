@@ -1,0 +1,5 @@
+streamlit==1.23.1 
+st-star-rating==0.0.5
+kbcstorage
+git+https://github.com/keboola/sapi-python-client.git
+st_clickable_images
