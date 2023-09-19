@@ -7,6 +7,8 @@ import time
 import base64
 import pytz
 from st_clickable_images import clickable_images 
+from kbcstorage.client import Client
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
@@ -29,7 +31,7 @@ def createData(answer):
     }
     results.loc[len(results)] = data
 
-def emojis_q(client):
+def emojis_q():
     if 'chosen_image' not in st.session_state:
         st.session_state['chosen_image'] = None
 
@@ -39,10 +41,8 @@ def emojis_q(client):
     <h2 style='text-align: center; margin-bottom: 4%'>{question_text}</h2>
     """, unsafe_allow_html=True)
 
-    EXPERIENCES = {0:"unhappy", 1: "ok", 2: "happy"}
+    EXPERIENCES = {0:"unhappy", 1: "neutral", 2: "happy"}
 
-
-    #col1, col2, col3 = st.columns(3)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     repo_dir = os.path.dirname(script_dir)
     image_folder = os.path.join(repo_dir, "static")
@@ -56,7 +56,7 @@ def emojis_q(client):
             encoded = base64.b64encode(image.read()).decode()
             images.append(f"data:image/png;base64,{encoded}")
     
-    notes = ["happy","ok","unhappy"]            
+    notes = ["happy","neutral","unhappy"]            
     
     clicked = clickable_images(
     images,
@@ -71,9 +71,8 @@ def emojis_q(client):
     if st.session_state['chosen_image']:
         results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
         client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
-    
-        st.success(f"Thank you for your feedback!")
-
+        st.success(f"You chose '{st.session_state['chosen_image']}'. Thank you for your feedback!")
+       
 
     #timestamp = int(time.time())
     #file_name = 'results'

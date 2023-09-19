@@ -1,7 +1,6 @@
 import streamlit as st
 import base64
 import os
-from kbcstorage.client import Client
 
 from functions.multiple_choice import multiplechoice_q
 from functions.yes_no import yes_no_q
@@ -30,27 +29,25 @@ def main():
 
     st.title('Satisfaction Survey')
 
-    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
-
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Emojis", "Multiplechoice Question", "Yes/No Question", "Open Question", "Scale 0 to 10", "Stars Rating"])
 
     with tab1:
-        emojis_q(client)
+        emojis_q()
         
     with tab2: 
-        multiplechoice_q(client)
+        multiplechoice_q()
 
     with tab3:
-        yes_no_q(client)
+        yes_no_q()
 
     with tab4:
-        open_q(client)
+        open_q()
 
     with tab5:
-        scale_q(client)
+        scale_q()
 
     with tab6:
-        rating_q(client)
+        rating_q()
 
     # Hide Made with streamlit from footer
     hide_streamlit_style = """

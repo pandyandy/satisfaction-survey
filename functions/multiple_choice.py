@@ -4,6 +4,8 @@ import random
 from datetime import datetime
 import time
 import pytz
+from kbcstorage.client import Client
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
@@ -26,7 +28,7 @@ def createData(answer):
     }
     results.loc[len(results)] = data
 
-def multiplechoice_q(client):
+def multiplechoice_q():
 
     if 'chosen_label' not in st.session_state:
         st.session_state['chosen_label'] = None
@@ -57,9 +59,7 @@ def multiplechoice_q(client):
     if st.session_state['chosen_label']:
         results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
         client.tables.load(table_id='out.c-SatisfactionSurvey.results_multiple_choice', file_path='./results_multiple_choice.csv.gz', is_incremental=True)
-
-        st.success(f"Thank you for your feedback!")
-
+        st.success(f"You chose '{st.session_state['chosen_label']}'. Thank you for your feedback!")
 
     #timestamp = int(time.time())
     #file_name = 'results'

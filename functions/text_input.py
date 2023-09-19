@@ -4,6 +4,9 @@ import random
 from datetime import datetime
 import time
 import pytz
+from kbcstorage.client import Client
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
+
 
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
@@ -26,7 +29,7 @@ def createData(answer):
     }
     results.loc[len(results)] = data
 
-def open_q(client):
+def open_q():
 
     if 'feedback' not in st.session_state:
         st.session_state['feedback'] = None
@@ -42,14 +45,13 @@ def open_q(client):
     if st.button("SUBMIT", key="submit_text"):
         if feedback:
             st.session_state['feedback'] = feedback
+
             createData(feedback)
-            st.success("Thank you for your feedback!")
-        
-        if st.session_state['feedback']:
             results.to_csv('./results_text_input.csv.gz', index=False, compression='gzip')
             client.tables.load(table_id='out.c-SatisfactionSurvey.results_text_input', file_path='./results_text_input.csv.gz', is_incremental=True)
 
-            st.success(f"Thank you for your feedback!")
+            st.success("Thank you for your feedback!")
+        
         else:
             st.warning("Please provide your feedback before submitting.")
 
