@@ -48,12 +48,11 @@ def scale_q(client):
                 if st.button(str(value), use_container_width=True):
                     createData(value)
                     st.session_state.feedback_given = True
+                    results.to_csv('./results_scale.csv.gz', index=False, compression='gzip')
+                    client.tables.load(table_id='out.c-SatisfactionSurvey.results_scale', file_path='./results_scale.csv.gz', is_incremental=True)
                     message_area.success("Thank you for your feedback!")
                 ChangeButtonColour(str(value), '#ffffff', background_color=colours[idx])
             
-    results.to_csv('./results_scale.csv.gz', index=False, compression='gzip')
-    client.tables.load(table_id='out.c-SatisfactionSurvey.results_scale', file_path='./results_scale.csv.gz', is_incremental=True)
-
 
     #timestamp = int(time.time())
     #file_name = 'results'

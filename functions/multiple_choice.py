@@ -55,11 +55,12 @@ def multiplechoice_q(client):
                 createData(label)
                 
     if st.session_state['chosen_label']:
+        results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_multiple_choice', file_path='./results_multiple_choice.csv.gz', is_incremental=True)
+
         st.success(f"Thank you for your feedback!")
 
-    results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
-    client.tables.load(table_id='out.c-SatisfactionSurvey.results_multiple_choice', file_path='./results_multiple_choice.csv.gz', is_incremental=True)
-    
+
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')

@@ -43,20 +43,28 @@ def yes_no_q(client):
     col1, yes_col, col3, no_col, col5 = st.columns(5)
     with col1:
         pass
+    
     if yes_col.button("YES", use_container_width=True):
         # Save response
         createData(answer="Yes", text=None)
         st.session_state.feedback_given = True
+        results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
+
         st.success("Thank you for your feedback!")
     ChangeButtonColour('YES', '#ffffff', '#4fbb6e')
+    
     with col3:
         pass
+
     if no_col.button("NO", use_container_width=True):
         st.session_state.waiting_for_feedback = True
         st.session_state.feedback_given = False
     ChangeButtonColour('NO', '#ffffff', '#e24b4b') 
+    
     with col5:
         pass
+    
     if st.session_state.get('waiting_for_feedback', False):
         feedback = st.text_area("Please tell us why:")
 
@@ -64,10 +72,11 @@ def yes_no_q(client):
             createData(answer="No", text=feedback)
             st.session_state.feedback_given = True
             st.session_state.waiting_for_feedback = False
+            results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
+            client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
+
             st.success("Thank you for your feedback!")
             
-    results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
-    client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
 
     
     #timestamp = int(time.time())

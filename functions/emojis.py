@@ -69,11 +69,12 @@ def emojis_q(client):
         st.session_state['chosen_image'] = EXPERIENCES[clicked]
 
     if st.session_state['chosen_image']:
+        results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
+    
         st.success(f"Thank you for your feedback!")
 
-    results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
-    client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
-    
+
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')

@@ -46,13 +46,14 @@ def open_q(client):
             st.success("Thank you for your feedback!")
         
         if st.session_state['feedback']:
+            results.to_csv('./results_text_input.csv.gz', index=False, compression='gzip')
+            client.tables.load(table_id='out.c-SatisfactionSurvey.results_text_input', file_path='./results_text_input.csv.gz', is_incremental=True)
+
             st.success(f"Thank you for your feedback!")
         else:
             st.warning("Please provide your feedback before submitting.")
 
-    results.to_csv('./results_text_input.csv.gz', index=False, compression='gzip')
-    client.tables.load(table_id='out.c-SatisfactionSurvey.results_text_input', file_path='./results_text_input.csv.gz', is_incremental=True)
-    #timestamp = int(time.time())
+     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')
     #client.tables.create(name=file_name, bucket_id='out.c-data', file_path='./updated_plan.csv.gz')

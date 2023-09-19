@@ -67,10 +67,11 @@ def rating_q(client):
         if st.button("SUBMIT", key="submit_rating") and not st.session_state.feedback_given:
             createData(opt_1=stars1, opt_2=stars2, opt_3=stars3)
             st.session_state.feedback_given = True
+            results.to_csv('./results_rating.csv.gz', index=False, compression='gzip')
+            client.tables.load(table_id='out.c-SatisfactionSurvey.results_rating', file_path='./results_rating.csv.gz', is_incremental=True)
+   
             message_area.success("Thank you for your feedback!")
 
-    results.to_csv('./results_rating.csv.gz', index=False, compression='gzip')
-    client.tables.load(table_id='out.c-SatisfactionSurvey.results_rating', file_path='./results_rating.csv.gz', is_incremental=True)
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')
