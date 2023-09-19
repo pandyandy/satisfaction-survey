@@ -6,6 +6,9 @@ import time
 import pytz
 from kbcstorage.client import Client
 
+if 'feedback' not in st.session_state:
+    st.session_state['feedback'] = None
+
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
@@ -33,14 +36,11 @@ def save_results_to_csv(results):
     try:
         results.to_csv('./results_text_input.csv.gz', index=False, compression='gzip')
         client.tables.load(table_id='out.c-SatisfactionSurvey.results_text_input', file_path='./results_text_input.csv.gz', is_incremental=True)
-        st.success("Thank you for your feedback!")
+        st.session_state['feedback'] = None
     except Exception as e:
         print(f"An error occurred while saving the results: {e}")
 
 def open_q():
-
-    if 'feedback' not in st.session_state:
-        st.session_state['feedback'] = None
 
     question_text = "Was there anything about this checkout process we could improve?"
 
@@ -54,6 +54,7 @@ def open_q():
         if feedback:
             st.session_state['feedback'] = feedback
             createData(feedback)
+            st.success("Thank you for your feedback!")
             save_results_to_csv(results)
         else:
             st.warning("Please provide your feedback before submitting.")

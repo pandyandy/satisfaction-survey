@@ -9,6 +9,9 @@ import pytz
 from st_clickable_images import clickable_images 
 from kbcstorage.client import Client
 
+if 'chosen_image' not in st.session_state:
+    st.session_state['chosen_image'] = None
+    
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
@@ -36,15 +39,13 @@ def save_results_to_csv(results):
     try:
         results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
         client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
-        st.success(f"You chose '{st.session_state['chosen_image']}'. Thank you for your feedback!")
+        st.session_state['chosen_image'] = None
+
     except Exception as e:
         print(f"An error occurred while saving the results: {e}")
 
 def emojis_q():
     
-    if 'chosen_image' not in st.session_state:
-        st.session_state['chosen_image'] = None
-
     question_text = "How satisfied were you with your purchase experience today?"
 
     st.markdown(f"""
@@ -79,8 +80,9 @@ def emojis_q():
         st.session_state['chosen_image'] = EXPERIENCES[clicked]
 
     if st.session_state['chosen_image']:
-        save_results_to_csv(results) 
-
+        st.success(f"You chose '{st.session_state['chosen_image']}'. Thank you for your feedback!") 
+        save_results_to_csv(results)
+        
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')

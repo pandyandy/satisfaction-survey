@@ -7,6 +7,11 @@ import pytz
 from functions.change_colour import ChangeButtonColour
 from kbcstorage.client import Client
 
+if 'feedback_given' not in st.session_state:
+    st.session_state['feedback_given'] = False
+if 'waiting_for_feedback' not in st.session_state:
+    st.session_state['waiting_for_feedback'] = False
+
 data = {'id': [], 'answer': [], 'feedback': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
@@ -35,17 +40,13 @@ def save_results_to_csv(results):
     try:
         results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
         client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
-        st.success("Thank you for your feedback!")
+        st.session_state['feedback_given'] = False
+        st.session_state['waiting_for_feedback'] = False
     except Exception as e:
         print(f"An error occurred while saving the results: {e}")
 
 def yes_no_q():
     
-    if 'feedback_given' not in st.session_state:
-        st.session_state['feedback_given'] = False
-    if 'waiting_for_feedback' not in st.session_state:
-        st.session_state['waiting_for_feedback'] = False
-
     question_text = "Were you satisfied with your purchase today?"
 
     st.markdown(f"""
@@ -55,22 +56,19 @@ def yes_no_q():
     col1, yes_col, col3, no_col, col5 = st.columns(5)
     with col1:
         pass
-    
     with yes_col:
         yes = st.button("YES", use_container_width=True)
-    
     with col3:
         pass    
-    
     with no_col:
         no = st.button("NO", use_container_width=True)
-
     with col5:
         pass
 
     if yes: 
         st.session_state['feedback_given'] = True
         createData(answer="Yes", text=None)
+        st.success("Thank you for your feedback!")
         save_results_to_csv(results)        
     ChangeButtonColour('YES', '#ffffff', '#4fbb6e')
     
@@ -86,7 +84,8 @@ def yes_no_q():
             st.session_state['feedback_given'] = True
             st.session_state['waiting_for_feedback'] = False
             createData(answer="No", text=feedback)
-            
+            save_results_to_csv(results) 
+            st.success("Thank you for your feedback!")
         else:
             st.warning("Please provide your feedback before submitting.")
 

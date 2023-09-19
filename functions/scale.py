@@ -7,6 +7,9 @@ import pytz
 from functions.change_colour import ChangeButtonColour
 from kbcstorage.client import Client
 
+if 'chosen_value' not in st.session_state:
+    st.session_state['chosen_value'] = None
+
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
@@ -34,15 +37,12 @@ def save_results_to_csv(results):
     try:
         results.to_csv('./results_scale.csv.gz', index=False, compression='gzip')
         client.tables.load(table_id='out.c-SatisfactionSurvey.results_scale', file_path='./results_scale.csv.gz', is_incremental=True)
-        st.success(f"You chose '{st.session_state['chosen_value']}'. Thank you for your feedback!")
+        st.session_state['chosen_value'] = None
     except Exception as e:
         print(f"An error occurred while saving the results: {e}")
              
 def scale_q():
     
-    if 'chosen_value' not in st.session_state:
-        st.session_state['chosen_value'] = None
-
     question_text = "How likely are you to recommend us to a friend or colleague?"
 
     st.markdown(f"""
@@ -61,7 +61,9 @@ def scale_q():
             ChangeButtonColour(str(value), '#ffffff', background_color=colours[idx])
             
     if st.session_state['chosen_value']:
+        st.success(f"You chose '{st.session_state['chosen_value']}'. Thank you for your feedback!")
         save_results_to_csv(results)
+
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')

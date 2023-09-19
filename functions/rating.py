@@ -7,6 +7,13 @@ import pytz
 from streamlit_star_rating import st_star_rating
 from kbcstorage.client import Client
 
+if 'option_1_value' not in st.session_state:
+    st.session_state['option_1_value'] = None
+if 'option_2_value' not in st.session_state:
+    st.session_state['option_2_value'] = None    
+if 'option_3_value' not in st.session_state:
+    st.session_state['option_3_value'] = None 
+
 data = {'id': [], 'option_1': [], 'option_2': [], 'option_3': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
@@ -33,23 +40,18 @@ def createData(opt_1, opt_2, opt_3):
     }
     results.loc[len(results)] = data
 
-def save_results_to_csv(results, option_1, option_2, option_3):
+def save_results_to_csv(results):
     try:
         results.to_csv('./results_rating.csv.gz', index=False, compression='gzip')
         client.tables.load(table_id='out.c-SatisfactionSurvey.results_rating', file_path='./results_rating.csv.gz', is_incremental=True)
-        st.success(f"You chose '{option_1}: {st.session_state['option_1_value']}', '{option_2}: {st.session_state['option_2_value']}', '{option_3}: {st.session_state['option_3_value']}'. Thank you for your feedback!")
+        st.session_state['option_1_value'] = None
+        st.session_state['option_2_value'] = None
+        st.session_state['option_3_value'] = None 
     except Exception as e:
         print(f"An error occurred while saving the results: {e}")
 
 def rating_q():
 
-    if 'option_1_value' not in st.session_state:
-        st.session_state['option_1_value'] = None
-    if 'option_2_value' not in st.session_state:
-        st.session_state['option_2_value'] = None    
-    if 'option_3_value' not in st.session_state:
-        st.session_state['option_3_value'] = None 
-    
     question_text = "Rank these aspects of your experience from 1 (bad) to 5 (amazing):"
 
     st.markdown(f"""
@@ -80,13 +82,13 @@ def rating_q():
         stars3 = st_star_rating("", maxValue= 5, defaultValue=0, key="rating3", size=30)
 
         if st.button("SUBMIT", key="submit_rating"):
-
             st.session_state['option_1_value'] = stars1
             st.session_state['option_2_value'] = stars2
             st.session_state['option_3_value'] = stars3 
 
             createData(opt_1=stars1, opt_2=stars2, opt_3=stars3)
-            save_results_to_csv(results, option_1, option_2, option_3)
+            st.success(f"You chose '{option_1}: {st.session_state['option_1_value']}', '{option_2}: {st.session_state['option_2_value']}', '{option_3}: {st.session_state['option_3_value']}'. Thank you for your feedback!")
+            save_results_to_csv(results)
             
     #timestamp = int(time.time())
     #file_name = 'results'

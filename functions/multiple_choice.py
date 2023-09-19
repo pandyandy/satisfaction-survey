@@ -6,6 +6,9 @@ import time
 import pytz
 from kbcstorage.client import Client
 
+if 'chosen_label' not in st.session_state:
+    st.session_state['chosen_label'] = None
+
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
@@ -33,14 +36,12 @@ def save_results_to_csv(results):
     try:
         results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
         client.tables.load(table_id='out.c-SatisfactionSurvey.results_multiple_choice', file_path='./results_multiple_choice.csv.gz', is_incremental=True)
-        st.success(f"You chose '{st.session_state['chosen_label']}'. Thank you for your feedback!")
+        st.session_state['chosen_label'] = None
+        
     except Exception as e:
         print(f"An error occurred while saving the results: {e}")
 
 def multiplechoice_q():
-
-    if 'chosen_label' not in st.session_state:
-        st.session_state['chosen_label'] = None
 
     question_text = "What was the primary reason for your purchase today?"
 
@@ -67,8 +68,9 @@ def multiplechoice_q():
                 st.session_state['chosen_label'] = label
                 
     if st.session_state['chosen_label']:
+        st.success(f"You chose '{st.session_state['chosen_label']}'. Thank you for your feedback!")
         save_results_to_csv(results)
-        
+
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')
