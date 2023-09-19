@@ -13,7 +13,7 @@ data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
 
-def createData(results, answer):
+def createData(answer):
     data = {'id': [], 'answer': [], 'date': [], 'time': []}
     results = pd.DataFrame(data)
     
