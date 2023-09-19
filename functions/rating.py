@@ -6,12 +6,11 @@ import time
 import pytz
 from streamlit_star_rating import st_star_rating
 from kbcstorage.client import Client
-client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
-
-data = {'id': [], 'option_1': [], 'option_2': [], 'option_3': [], 'date': [], 'time': []}
-results = pd.DataFrame(data)
 
 def createData(opt_1, opt_2, opt_3):
+    data = {'id': [], 'option_1': [], 'option_2': [], 'option_3': [], 'date': [], 'time': []}
+    results = pd.DataFrame(data)
+    
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -31,8 +30,11 @@ def createData(opt_1, opt_2, opt_3):
     }
     results.loc[len(results)] = data
 
+    return results 
+
 def rating_q():
-    
+    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
+
     if 'option_1_value' not in st.session_state:
         st.session_state['option_1_value'] = None
     if 'option_2_value' not in st.session_state:
@@ -77,7 +79,7 @@ def rating_q():
             st.session_state['option_2_value'] = stars2
             st.session_state['option_3_value'] = stars3 
 
-            createData(opt_1=st.session_state['option_1_value'], opt_2=st.session_state['option_2_value'], opt_3=st.session_state['option_3_value'])
+            results = createData(opt_1=st.session_state['option_1_value'], opt_2=st.session_state['option_2_value'], opt_3=st.session_state['option_3_value'])
             
             results.to_csv('./results_rating.csv.gz', index=False, compression='gzip')
             client.tables.load(table_id='out.c-SatisfactionSurvey.results_rating', file_path='./results_rating.csv.gz', is_incremental=True)

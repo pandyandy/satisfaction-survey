@@ -7,12 +7,13 @@ import pytz
 from functions.change_colour import ChangeButtonColour
 from kbcstorage.client import Client
 
-client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
-data = {'id': [], 'answer': [], 'date': [], 'time': []}
-results = pd.DataFrame(data)
+
 
 def createData(answer):
+    data = {'id': [], 'answer': [], 'date': [], 'time': []}
+    results = pd.DataFrame(data)
+
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -29,8 +30,9 @@ def createData(answer):
         'time': time
     }
     results.loc[len(results)] = data
-
+    return results
 def scale_q():
+    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
     if 'chosen_value' not in st.session_state:
         st.session_state['chosen_value'] = None
 
@@ -50,7 +52,7 @@ def scale_q():
         with columns[idx]:
             if st.button(str(value), use_container_width=True):
                 st.session_state['chosen_value'] = str(value)
-                createData(value)
+                results = createData(value)
             ChangeButtonColour(str(value), '#ffffff', background_color=colours[idx])
             
     if st.session_state['chosen_value']:

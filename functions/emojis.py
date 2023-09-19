@@ -8,12 +8,15 @@ import base64
 import pytz
 from st_clickable_images import clickable_images 
 from kbcstorage.client import Client
-client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
-def createData(answer):
+
+def createData(results, answer):
+    data = {'id': [], 'answer': [], 'date': [], 'time': []}
+    results = pd.DataFrame(data)
+    
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -30,8 +33,11 @@ def createData(answer):
         'time': time
     }
     results.loc[len(results)] = data
+    return results
 
 def emojis_q():
+    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
+    
     if 'chosen_image' not in st.session_state:
         st.session_state['chosen_image'] = None
 
@@ -65,7 +71,7 @@ def emojis_q():
     img_style={"margin": "5%", "height": "200px"},
 )
     if clicked in EXPERIENCES:
-        createData(EXPERIENCES[clicked])
+        results = createData(EXPERIENCES[clicked])
         st.session_state['chosen_image'] = EXPERIENCES[clicked]
 
     if st.session_state['chosen_image']:

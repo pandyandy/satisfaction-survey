@@ -6,11 +6,11 @@ import time
 import pytz
 from functions.change_colour import ChangeButtonColour
 from kbcstorage.client import Client
-client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
-data = {'id': [], 'answer': [], 'feedback': [], 'date': [], 'time': []}
-results = pd.DataFrame(data)
+
 
 def createData(answer, text):
+    data = {'id': [], 'answer': [], 'feedback': [], 'date': [], 'time': []}
+    results = pd.DataFrame(data)
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -28,8 +28,9 @@ def createData(answer, text):
         'time': time
     }
     results.loc[len(results)] = data
-
+    return results
 def yes_no_q():
+    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
     if 'feedback_given' not in st.session_state:
         st.session_state['feedback_given'] = False
@@ -60,31 +61,25 @@ def yes_no_q():
 
     if yes: 
         st.session_state['feedback_given'] = True
-        createData(answer="Yes", text=None)
-        results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
+        results_yes = createData(answer="Yes", text=None)
+        results_yes.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
         client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
         st.success("Thank you for your feedback!")
     ChangeButtonColour('YES', '#ffffff', '#4fbb6e')
     
-    if yes_col.button("YES", use_container_width=True):
-        # Save response
-        createData(answer="Yes", text=None)
-        st.session_state.feedback_given = True
-        
-        results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
-        client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
+    if no:    
+        st.session_state.waiting_for_feedback = True
+        st.session_state.feedback_given = False
+    ChangeButtonColour('NO', '#ffffff', '#e24b4b') 
 
-        st.success("Thank you for your feedback!")
-    ChangeButtonColour('YES', '#ffffff', '#4fbb6e')
-    
     if st.session_state.get('waiting_for_feedback', False):
         feedback = st.text_area("Please tell us why:", key="text_yn")
         
         if st.button("SUBMIT", key="submit_yn") and not st.session_state['feedback_given']:
-            createData(answer="No", text=feedback)
-            st.session_state.feedback_given = True
-            st.session_state.waiting_for_feedback = False
-            results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
+            results_no = createData(answer="No", text=feedback)
+            st.session_state['feedback_given'] = True
+            st.session_state['waiting_for_feedback'] = False
+            results_no.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
             client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
 
             st.success("Thank you for your feedback!")

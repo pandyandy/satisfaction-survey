@@ -5,13 +5,13 @@ from datetime import datetime
 import time
 import pytz
 from kbcstorage.client import Client
-client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
 
-data = {'id': [], 'answer': [], 'date': [], 'time': []}
-results = pd.DataFrame(data)
+
 
 def createData(answer):
+    data = {'id': [], 'answer': [], 'date': [], 'time': []}
+    results = pd.DataFrame(data)
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -28,8 +28,10 @@ def createData(answer):
         'time': time
     }
     results.loc[len(results)] = data
+    return results
 
 def open_q():
+    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
     if 'feedback' not in st.session_state:
         st.session_state['feedback'] = None
@@ -46,7 +48,7 @@ def open_q():
         if feedback:
             st.session_state['feedback'] = feedback
 
-            createData(feedback)
+            results = createData(feedback)
             results.to_csv('./results_text_input.csv.gz', index=False, compression='gzip')
             client.tables.load(table_id='out.c-SatisfactionSurvey.results_text_input', file_path='./results_text_input.csv.gz', is_incremental=True)
 

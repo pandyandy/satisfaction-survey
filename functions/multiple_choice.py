@@ -5,12 +5,11 @@ from datetime import datetime
 import time
 import pytz
 from kbcstorage.client import Client
-client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
-
-data = {'id': [], 'answer': [], 'date': [], 'time': []}
-results = pd.DataFrame(data)
 
 def createData(answer):
+    data = {'id': [], 'answer': [], 'date': [], 'time': []}
+    results = pd.DataFrame(data)
+    
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -28,7 +27,10 @@ def createData(answer):
     }
     results.loc[len(results)] = data
 
+    return results
+
 def multiplechoice_q():
+    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
     if 'chosen_label' not in st.session_state:
         st.session_state['chosen_label'] = None
@@ -48,13 +50,13 @@ def multiplechoice_q():
         for label in button_labels_1:
             if st.button(label, use_container_width=True):
                 st.session_state['chosen_label'] = label
-                createData(label)
+                results = createData(label)
 
     with col2:
         for label in button_labels_2:
             if st.button(label, use_container_width=True):
                 st.session_state['chosen_label'] = label
-                createData(label)
+                results = createData(label)
                 
     if st.session_state['chosen_label']:
         results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
