@@ -6,12 +6,12 @@ import time
 import pytz
 from kbcstorage.client import Client
 
+data = {'id': [], 'answer': [], 'date': [], 'time': []}
+results = pd.DataFrame(data)
 
-
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
 def createData(answer):
-    data = {'id': [], 'answer': [], 'date': [], 'time': []}
-    results = pd.DataFrame(data)
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -28,10 +28,16 @@ def createData(answer):
         'time': time
     }
     results.loc[len(results)] = data
-    return results
+
+def save_results_to_csv(results):
+    try:
+        results.to_csv('./results_text_input.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_text_input', file_path='./results_text_input.csv.gz', is_incremental=True)
+        st.success("Thank you for your feedback!")
+    except Exception as e:
+        print(f"An error occurred while saving the results: {e}")
 
 def open_q():
-    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
     if 'feedback' not in st.session_state:
         st.session_state['feedback'] = None
@@ -47,13 +53,8 @@ def open_q():
     if st.button("SUBMIT", key="submit_text"):
         if feedback:
             st.session_state['feedback'] = feedback
-
-            results = createData(feedback)
-            results.to_csv('./results_text_input.csv.gz', index=False, compression='gzip')
-            client.tables.load(table_id='out.c-SatisfactionSurvey.results_text_input', file_path='./results_text_input.csv.gz', is_incremental=True)
-
-            st.success("Thank you for your feedback!")
-        
+            createData(feedback)
+            save_results_to_csv(results)
         else:
             st.warning("Please provide your feedback before submitting.")
 

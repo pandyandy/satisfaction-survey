@@ -12,11 +12,9 @@ from kbcstorage.client import Client
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
-def createData(answer):
-    data = {'id': [], 'answer': [], 'date': [], 'time': []}
-    results = pd.DataFrame(data)
-    
+def createData(answer):    
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -33,10 +31,16 @@ def createData(answer):
         'time': time
     }
     results.loc[len(results)] = data
-    return results
+
+def save_results_to_csv(results):
+    try:
+        results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
+        st.success(f"You chose '{st.session_state['chosen_image']}'. Thank you for your feedback!")
+    except Exception as e:
+        print(f"An error occurred while saving the results: {e}")
 
 def emojis_q():
-    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
     
     if 'chosen_image' not in st.session_state:
         st.session_state['chosen_image'] = None
@@ -71,14 +75,11 @@ def emojis_q():
     img_style={"margin": "5%", "height": "200px"},
 )
     if clicked in EXPERIENCES:
-        results = createData(EXPERIENCES[clicked])
+        createData(EXPERIENCES[clicked])
         st.session_state['chosen_image'] = EXPERIENCES[clicked]
 
     if st.session_state['chosen_image']:
-        results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
-        client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
-        st.success(f"You chose '{st.session_state['chosen_image']}'. Thank you for your feedback!")
-       
+        save_results_to_csv(results) 
 
     #timestamp = int(time.time())
     #file_name = 'results'

@@ -7,14 +7,13 @@ import pytz
 from functions.change_colour import ChangeButtonColour
 from kbcstorage.client import Client
 
+data = {'id': [], 'answer': [], 'date': [], 'time': []}
+results = pd.DataFrame(data)
 
-
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
 def createData(answer):
-    data = {'id': [], 'answer': [], 'date': [], 'time': []}
-    results = pd.DataFrame(data)
-
-    current_datetime = datetime.now()
+    #current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
     current_datetime_utc = datetime.utcnow()
@@ -30,9 +29,17 @@ def createData(answer):
         'time': time
     }
     results.loc[len(results)] = data
-    return results
+    
+def save_results_to_csv(results):
+    try:
+        results.to_csv('./results_scale.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_scale', file_path='./results_scale.csv.gz', is_incremental=True)
+        st.success(f"You chose '{st.session_state['chosen_value']}'. Thank you for your feedback!")
+    except Exception as e:
+        print(f"An error occurred while saving the results: {e}")
+             
 def scale_q():
-    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
+    
     if 'chosen_value' not in st.session_state:
         st.session_state['chosen_value'] = None
 
@@ -45,22 +52,16 @@ def scale_q():
     colours=['#d44948', '#dc6545', '#e17642', '#efa73e', '#f3b83c', '#fbd538', '#d8ce43', '#c0ca4b', '#87c15b', '#6fbc62', '#4cb76d']
 
     columns = st.columns(11) # Create 11 columns for each button
-    message_area = st.empty()
-
 
     for idx, value in enumerate(range(11)): # Loop from 0 to 10
         with columns[idx]:
             if st.button(str(value), use_container_width=True):
-                st.session_state['chosen_value'] = str(value)
-                results = createData(value)
+                st.session_state['chosen_value'] = value
+                createData(value)
             ChangeButtonColour(str(value), '#ffffff', background_color=colours[idx])
             
     if st.session_state['chosen_value']:
-        results.to_csv('./results_scale.csv.gz', index=False, compression='gzip')
-        client.tables.load(table_id='out.c-SatisfactionSurvey.results_scale', file_path='./results_scale.csv.gz', is_incremental=True)
-
-        message_area.success(f"You chose '{st.session_state['chosen_value']}'. Thank you for your feedback!")
-             
+        save_results_to_csv(results)
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')

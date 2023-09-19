@@ -7,10 +7,12 @@ import pytz
 from functions.change_colour import ChangeButtonColour
 from kbcstorage.client import Client
 
+data = {'id': [], 'answer': [], 'feedback': [], 'date': [], 'time': []}
+results = pd.DataFrame(data)
+
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
 def createData(answer, text):
-    data = {'id': [], 'answer': [], 'feedback': [], 'date': [], 'time': []}
-    results = pd.DataFrame(data)
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -28,10 +30,17 @@ def createData(answer, text):
         'time': time
     }
     results.loc[len(results)] = data
-    return results
-def yes_no_q():
-    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
+def save_results_to_csv(results):
+    try:
+        results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
+        st.success("Thank you for your feedback!")
+    except Exception as e:
+        print(f"An error occurred while saving the results: {e}")
+
+def yes_no_q():
+    
     if 'feedback_given' not in st.session_state:
         st.session_state['feedback_given'] = False
     if 'waiting_for_feedback' not in st.session_state:
@@ -61,10 +70,8 @@ def yes_no_q():
 
     if yes: 
         st.session_state['feedback_given'] = True
-        results_yes = createData(answer="Yes", text=None)
-        results_yes.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
-        client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
-        st.success("Thank you for your feedback!")
+        createData(answer="Yes", text=None)
+        save_results_to_csv(results)        
     ChangeButtonColour('YES', '#ffffff', '#4fbb6e')
     
     if no:    
@@ -76,14 +83,10 @@ def yes_no_q():
         feedback = st.text_area("Please tell us why:", key="text_yn")
         
         if st.button("SUBMIT", key="submit_yn") and not st.session_state['feedback_given']:
-            results_no = createData(answer="No", text=feedback)
             st.session_state['feedback_given'] = True
             st.session_state['waiting_for_feedback'] = False
-            results_no.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
-            client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
-
-            st.success("Thank you for your feedback!")
-        
+            createData(answer="No", text=feedback)
+            
         else:
             st.warning("Please provide your feedback before submitting.")
 

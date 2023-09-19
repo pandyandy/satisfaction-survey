@@ -7,9 +7,12 @@ import pytz
 from streamlit_star_rating import st_star_rating
 from kbcstorage.client import Client
 
+data = {'id': [], 'option_1': [], 'option_2': [], 'option_3': [], 'date': [], 'time': []}
+results = pd.DataFrame(data)
+
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
+
 def createData(opt_1, opt_2, opt_3):
-    data = {'id': [], 'option_1': [], 'option_2': [], 'option_3': [], 'date': [], 'time': []}
-    results = pd.DataFrame(data)
     
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
@@ -30,10 +33,15 @@ def createData(opt_1, opt_2, opt_3):
     }
     results.loc[len(results)] = data
 
-    return results 
+def save_results_to_csv(results, option_1, option_2, option_3):
+    try:
+        results.to_csv('./results_rating.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_rating', file_path='./results_rating.csv.gz', is_incremental=True)
+        st.success(f"You chose '{option_1}: {st.session_state['option_1_value']}', '{option_2}: {st.session_state['option_2_value']}', '{option_3}: {st.session_state['option_3_value']}'. Thank you for your feedback!")
+    except Exception as e:
+        print(f"An error occurred while saving the results: {e}")
 
 def rating_q():
-    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
     if 'option_1_value' not in st.session_state:
         st.session_state['option_1_value'] = None
@@ -50,8 +58,6 @@ def rating_q():
 
     col1, col2 = st.columns(2)
     
-    message_area = st.empty()
-
     with col1:
         option_1 = "Ordering process"
         st.markdown(f"""
@@ -79,13 +85,9 @@ def rating_q():
             st.session_state['option_2_value'] = stars2
             st.session_state['option_3_value'] = stars3 
 
-            results = createData(opt_1=st.session_state['option_1_value'], opt_2=st.session_state['option_2_value'], opt_3=st.session_state['option_3_value'])
+            createData(opt_1=stars1, opt_2=stars2, opt_3=stars3)
+            save_results_to_csv(results, option_1, option_2, option_3)
             
-            results.to_csv('./results_rating.csv.gz', index=False, compression='gzip')
-            client.tables.load(table_id='out.c-SatisfactionSurvey.results_rating', file_path='./results_rating.csv.gz', is_incremental=True)
-   
-            message_area.success(f"You chose '{option_1}: {st.session_state['option_1_value']}', '{option_2}: {st.session_state['option_2_value']}', '{option_3}: {st.session_state['option_3_value']}'. Thank you for your feedback!")
-
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')

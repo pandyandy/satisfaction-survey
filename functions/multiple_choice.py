@@ -6,10 +6,12 @@ import time
 import pytz
 from kbcstorage.client import Client
 
-def createData(answer):
-    data = {'id': [], 'answer': [], 'date': [], 'time': []}
-    results = pd.DataFrame(data)
-    
+data = {'id': [], 'answer': [], 'date': [], 'time': []}
+results = pd.DataFrame(data)
+
+client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
+
+def createData(answer):    
     current_datetime = datetime.now()
     random_number = random.randint(1000, 9999)
     # PRAGUE TIMEZONE
@@ -27,10 +29,15 @@ def createData(answer):
     }
     results.loc[len(results)] = data
 
-    return results
+def save_results_to_csv(results):
+    try:
+        results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_multiple_choice', file_path='./results_multiple_choice.csv.gz', is_incremental=True)
+        st.success(f"You chose '{st.session_state['chosen_label']}'. Thank you for your feedback!")
+    except Exception as e:
+        print(f"An error occurred while saving the results: {e}")
 
 def multiplechoice_q():
-    client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
     if 'chosen_label' not in st.session_state:
         st.session_state['chosen_label'] = None
@@ -49,20 +56,19 @@ def multiplechoice_q():
     with col1: 
         for label in button_labels_1:
             if st.button(label, use_container_width=True):
+                createData(label)
                 st.session_state['chosen_label'] = label
-                results = createData(label)
+                
 
     with col2:
         for label in button_labels_2:
             if st.button(label, use_container_width=True):
+                createData(label)
                 st.session_state['chosen_label'] = label
-                results = createData(label)
                 
     if st.session_state['chosen_label']:
-        results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
-        client.tables.load(table_id='out.c-SatisfactionSurvey.results_multiple_choice', file_path='./results_multiple_choice.csv.gz', is_incremental=True)
-        st.success(f"You chose '{st.session_state['chosen_label']}'. Thank you for your feedback!")
-
+        save_results_to_csv(results)
+        
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')
