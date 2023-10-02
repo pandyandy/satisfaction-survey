@@ -9,9 +9,20 @@ import pytz
 from st_clickable_images import clickable_images 
 from kbcstorage.client import Client
 
-if 'chosen_image' not in st.session_state:
-    st.session_state['chosen_image'] = None
-    
+image_path = os.path.dirname(os.path.abspath(__file__))
+
+st.set_page_config(
+    page_title="Keboola Satisfaction Survey",
+    page_icon=image_path+"/static/keboola.png",
+    layout="wide"
+    )
+
+logo_image = image_path+"/static/keboola_logo.png"
+logo_html = f'<div style="display: flex; justify-content: flex-end;"><img src="data:image/png;base64,{base64.b64encode(open(logo_image, "rb").read()).decode()}" style="width: 150px; margin-left: -10px;"></div>'
+st.markdown(f"{logo_html}", unsafe_allow_html=True)
+
+st.title('Satisfaction Survey')
+
 data = {'id': [], 'answer': [], 'date': [], 'time': []}
 results = pd.DataFrame(data)
 
@@ -87,6 +98,14 @@ def emojis_q():
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')
     #client.tables.create(name=file_name, bucket_id='out.c-data', file_path='./updated_plan.csv.gz')
+
+    hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     emojis_q()
