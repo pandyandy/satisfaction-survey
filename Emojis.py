@@ -22,7 +22,6 @@ logo_image = image_path+"/static/keboola_logo.png"
 logo_html = f'<div style="display: flex; justify-content: flex-end;"><img src="data:image/png;base64,{base64.b64encode(open(logo_image, "rb").read()).decode()}" style="width: 150px; margin-left: -10px;"></div>'
 st.markdown(f"{logo_html}", unsafe_allow_html=True)
 st.markdown(" ")
-#st.title('Satisfaction Survey')
 
 # Use client secrets
 client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
@@ -47,6 +46,12 @@ def get_data(answer):
         'time': time
     }
     results.loc[len(results)] = data
+
+# Load data into Keboola Storage
+def load_data():
+    if not results.empty:
+        results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
+        client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
 
 # Create Q&A
 question_text = "How satisfied were you with your purchase experience today?"
@@ -75,10 +80,8 @@ img_style={"margin": "5%", "height": "200px"},
 if clicked in EXPERIENCES:
     get_data(EXPERIENCES[clicked])
     st.success(f"You chose '{EXPERIENCES[clicked]}'. Thank you for your feedback!") 
-    
-# Load data into Keboola Storage
-results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
-client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
+
+load_data()
 
 #timestamp = int(time.time())
 #file_name = 'results'
