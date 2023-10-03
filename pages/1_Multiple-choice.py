@@ -6,23 +6,17 @@ import pytz
 import base64
 
 from datetime import datetime
-from st_clickable_images import clickable_images 
 from kbcstorage.client import Client
 
 # Set page layout
-image_path = os.path.dirname(os.path.abspath(__file__))
+st.set_page_config(layout="wide")
 
-st.set_page_config(
-    page_title="Keboola Satisfaction Survey",
-    page_icon=image_path+"/static/keboola.png",
-    layout="wide"
-    )
-
-logo_image = image_path+"/static/keboola_logo.png"
+static_directory = os.path.join(os.path.dirname(__file__), "..", "static")
+logo_image = os.path.join(static_directory, "keboola_logo.png")
 logo_html = f'<div style="display: flex; justify-content: flex-end;"><img src="data:image/png;base64,{base64.b64encode(open(logo_image, "rb").read()).decode()}" style="width: 150px; margin-left: -10px;"></div>'
+
 st.markdown(f"{logo_html}", unsafe_allow_html=True)
 st.markdown(" ")
-#st.title('Satisfaction Survey')
 
 # Use client secrets
 client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
@@ -49,45 +43,37 @@ def get_data(answer):
     results.loc[len(results)] = data
 
 # Create Q&A
-question_text = "How satisfied were you with your purchase experience today?"
+question_text = "What was the primary reason for your purchase today?"
 
 st.markdown(f"""
 <h2 style='text-align: center; margin-bottom: 4%'>{question_text}</h2>
 """, unsafe_allow_html=True)
 
-EXPERIENCES = {0:"unhappy", 1: "neutral", 2: "happy"}
+col1, col2 = st.columns(2)
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-repo_dir = os.path.dirname(script_dir)
-image_folder = os.path.join(repo_dir, "static")
-image_files = [image_path+"/static/angry.png", image_path+"/static/neutral.png", image_path+"/static/happy.png"]
-
-images = []
-
-for file in image_files:
-    with open(file, "rb") as image:
-        encoded = base64.b64encode(image.read()).decode()
-        images.append(f"data:image/png;base64,{encoded}")
-        
-clicked = clickable_images(
-images,
-div_style={"display": "flex", "justify-content": "center"},
-img_style={"margin": "5%", "height": "200px"},
-)
+button_labels_col1 = ['Quality', 'Price', 'Convenience']
+button_labels_col2 = ['Brand', 'Recommendation', 'Other']
 
 # Response
-if clicked in EXPERIENCES:
-    get_data(EXPERIENCES[clicked])
-    st.success(f"You chose '{EXPERIENCES[clicked]}'. Thank you for your feedback!") 
-    
-# Load data into Keboola Storage
-results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
-client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
+for label in button_labels_col1:
+    if col1.button(label, use_container_width=True):
+        get_data(label)
+        st.success(f"You chose '{label}'. Thank you for your feedback!")
 
-#timestamp = int(time.time())
-#file_name = 'results'
-#client.tables.delete('out.c-data.data_upated_plan')
-#client.tables.create(name=file_name, bucket_id='out.c-data', file_path='./updated_plan.csv.gz')
+
+for label in button_labels_col2:
+    if col2.button(label, use_container_width=True):
+        get_data(label)
+        st.success(f"You chose '{label}'. Thank you for your feedback!")
+
+    #timestamp = int(time.time())
+    #file_name = 'results'
+    #client.tables.delete('out.c-data.data_upated_plan')
+    #client.tables.create(name=file_name, bucket_id='out.c-data', file_path='./updated_plan.csv.gz')
+
+# Load data into Keboola Storage
+results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
+client.tables.load(table_id='out.c-SatisfactionSurvey.results_multiple_choice', file_path='./results_multiple_choice.csv.gz', is_incremental=True)
 
 # Hide made with Streamlit
 hide_streamlit_style = """
