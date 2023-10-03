@@ -76,15 +76,9 @@ st.markdown(circle_css, unsafe_allow_html=True)
 col1, col2, col3, col4, col5 = st.columns(5)
 
 # Create clickable circles (dots) in each column with different colors
-clicked = (
+
 col1.markdown(f'<div class="circle" style="background-color:{colors[0]};"></div>', unsafe_allow_html=True),
 col2.markdown(f'<div class="circle" style="background-color:{colors[1]};"></div>', unsafe_allow_html=True),
 col3.markdown(f'<div class="circle" style="background-color:{colors[2]};"></div>', unsafe_allow_html=True),
 col4.markdown(f'<div class="circle" style="background-color:{colors[3]};"></div>', unsafe_allow_html=True),
 col5.markdown(f'<div class="circle" style="background-color:{colors[4]};"></div>', unsafe_allow_html=True)
-)
-
-if clicked in LIKERT:
-    get_data(LIKERT[clicked])
-    st.success(f"You chose '{LIKERT[clicked]}'. Thank you for your feedback!") 
-    
