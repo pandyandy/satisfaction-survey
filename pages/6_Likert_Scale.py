@@ -42,6 +42,11 @@ def get_data(answer):
     }
     results.loc[len(results)] = data
 
+# Load data into Keboola Storage
+#def load_data():
+ #   results.to_csv('./results_likert.csv.gz', index=False, compression='gzip')
+  #  client.tables.load(table_id='out.c-SatisfactionSurvey.results_likert', file_path='./results_likert.csv.gz', is_incremental=True)
+
 # Create Q&A
 question_text = "How likely are you to use our service again?"
 
@@ -75,10 +80,10 @@ st.markdown(circle_css, unsafe_allow_html=True)
 # Create a container with 5 columns
 col1, col2, col3, col4, col5 = st.columns(5)
 
-# Create clickable circles (dots) in each column with different colors
-
 col1.markdown(f'<div class="circle" style="background-color:{colors[0]};"></div>', unsafe_allow_html=True),
 col2.markdown(f'<div class="circle" style="background-color:{colors[1]};"></div>', unsafe_allow_html=True),
 col3.markdown(f'<div class="circle" style="background-color:{colors[2]};"></div>', unsafe_allow_html=True),
 col4.markdown(f'<div class="circle" style="background-color:{colors[3]};"></div>', unsafe_allow_html=True),
 col5.markdown(f'<div class="circle" style="background-color:{colors[4]};"></div>', unsafe_allow_html=True)
+
+

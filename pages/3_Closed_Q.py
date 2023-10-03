@@ -43,6 +43,11 @@ def get_data(answer):
     }
     results.loc[len(results)] = data
 
+# Load data into Keboola Storage
+def load_data():
+    results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
+    client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
+
 # Create Q&A
 question_text = "Were you satisfied with your purchase today?"
 
@@ -58,22 +63,20 @@ placeholder = st.empty()
 
 if yes: 
     get_data(answer="yes")
-    placeholder.success("Thank you for your feedback!")       
+    placeholder.success("Thank you for your feedback!")
+    load_data()
 ChangeButtonColour('YES', '#ffffff', '#4fbb6e')
 
 if no:
     get_data(answer="no")
     placeholder.success("Thank you for your feedback!")    
+    load_data()
 ChangeButtonColour('NO', '#ffffff', '#e24b4b') 
 
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')
     #client.tables.create(name=file_name, bucket_id='out.c-data', file_path='./updated_plan.csv.gz')
-
-# Load data into Keboola Storage
-results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
-client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
 
 # Hide made with Streamlit
 hide_streamlit_style = """

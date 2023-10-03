@@ -42,6 +42,10 @@ def get_data(answer):
     }
     results.loc[len(results)] = data
 
+# Load data into Keboola Storage
+def load_data():
+    results.to_csv('./results_text_input.csv.gz', index=False, compression='gzip')
+    client.tables.load(table_id='out.c-SatisfactionSurvey.results_text_input', file_path='./results_text_input.csv.gz', is_incremental=True)
 
 # Create Q&A
 question_text = "Was there anything about this checkout process we could improve?"
@@ -57,6 +61,7 @@ if st.button("SUBMIT", key="submit_text"):
     if feedback:
         get_data(feedback)
         st.success("Thank you for your feedback!")
+        load_data()
     else:
         st.warning("Please provide your feedback before submitting.")
 
@@ -64,10 +69,6 @@ if st.button("SUBMIT", key="submit_text"):
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')
     #client.tables.create(name=file_name, bucket_id='out.c-data', file_path='./updated_plan.csv.gz')
-
-# Load data into Keboola Storage
-results.to_csv('./results_text_input.csv.gz', index=False, compression='gzip')
-client.tables.load(table_id='out.c-SatisfactionSurvey.results_text_input', file_path='./results_text_input.csv.gz', is_incremental=True)
 
 # Hide made with Streamlit
 hide_streamlit_style = """
