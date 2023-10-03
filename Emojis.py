@@ -57,11 +57,7 @@ st.markdown(f"""
 
 EXPERIENCES = {0:"unhappy", 1: "neutral", 2: "happy"}
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-repo_dir = os.path.dirname(script_dir)
-image_folder = os.path.join(repo_dir, "static")
 image_files = [image_path+"/static/angry.png", image_path+"/static/neutral.png", image_path+"/static/happy.png"]
-
 images = []
 
 for file in image_files:
