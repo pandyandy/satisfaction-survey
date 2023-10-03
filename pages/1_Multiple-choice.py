@@ -42,6 +42,11 @@ def get_data(answer):
     }
     results.loc[len(results)] = data
 
+# Load data into Keboola Storage
+def load_data():
+    results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
+    client.tables.load(table_id='out.c-SatisfactionSurvey.results_multiple_choice', file_path='./results_multiple_choice.csv.gz', is_incremental=True)
+
 # Create Q&A
 question_text = "What was the primary reason for your purchase today?"
 
@@ -59,21 +64,18 @@ for label in button_labels_col1:
     if col1.button(label, use_container_width=True):
         get_data(label)
         st.success(f"You chose '{label}'. Thank you for your feedback!")
-
+        load_data()
 
 for label in button_labels_col2:
     if col2.button(label, use_container_width=True):
         get_data(label)
         st.success(f"You chose '{label}'. Thank you for your feedback!")
-
+        load_data()
+        
     #timestamp = int(time.time())
     #file_name = 'results'
     #client.tables.delete('out.c-data.data_upated_plan')
     #client.tables.create(name=file_name, bucket_id='out.c-data', file_path='./updated_plan.csv.gz')
-
-# Load data into Keboola Storage
-results.to_csv('./results_multiple_choice.csv.gz', index=False, compression='gzip')
-client.tables.load(table_id='out.c-SatisfactionSurvey.results_multiple_choice', file_path='./results_multiple_choice.csv.gz', is_incremental=True)
 
 # Hide made with Streamlit
 hide_streamlit_style = """

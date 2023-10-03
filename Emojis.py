@@ -49,9 +49,8 @@ def get_data(answer):
 
 # Load data into Keboola Storage
 def load_data():
-    if not results.empty:
-        results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
-        client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
+    results.to_csv('./results_emojis.csv.gz', index=False, compression='gzip')
+    client.tables.load(table_id='out.c-SatisfactionSurvey.results_emojis', file_path='./results_emojis.csv.gz', is_incremental=True)
 
 # Create Q&A
 question_text = "How satisfied were you with your purchase experience today?"
@@ -80,8 +79,7 @@ img_style={"margin": "5%", "height": "200px"},
 if clicked in EXPERIENCES:
     get_data(EXPERIENCES[clicked])
     st.success(f"You chose '{EXPERIENCES[clicked]}'. Thank you for your feedback!") 
-
-load_data()
+    load_data()
 
 #timestamp = int(time.time())
 #file_name = 'results'
