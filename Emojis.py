@@ -61,7 +61,7 @@ st.markdown(f"""
 
 EXPERIENCES = {0:"unhappy", 1: "neutral", 2: "happy"}
 
-image_files = [image_path+"/static/angry.png", image_path+"/static/neutral.png", image_path+"/static/happy.png"]
+image_files = [image_path+"/static/angry.png", image_path+"/static/ok.png", image_path+"/static/happy.png"]
 images = []
 
 for file in image_files:

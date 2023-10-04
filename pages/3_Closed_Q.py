@@ -23,10 +23,10 @@ st.markdown(" ")
 client = Client(st.secrets.kbc_url, st.secrets.kbc_token)
 
 # Get data
-data = {'id': [], 'answer': [], 'date': [], 'time': []}
+data = {'id': [], 'answer': [],'feedback': [],'date': [], 'time': []}
 results = pd.DataFrame(data)
 
-def get_data(answer):
+def get_data(answer, feedback):
     random_number = random.randint(1000, 9999)
     # Prague Timezone
     current_datetime_utc = datetime.utcnow()
@@ -38,6 +38,7 @@ def get_data(answer):
     data = {
         'id': f"{current_datetime_prague}_{random_number}",
         'answer': answer,
+        'feedback': feedback,
         'date': date,
         'time': time
     }
@@ -48,6 +49,12 @@ def load_data():
     results.to_csv('./results_yes_no.csv.gz', index=False, compression='gzip')
     client.tables.load(table_id='out.c-SatisfactionSurvey.results_yes_no', file_path='./results_yes_no.csv.gz', is_incremental=True)
 
+def callback():
+    st.session_state.button_clicked = True
+
+if 'button_clicked' not in st.session_state:
+    st.session_state.button_clicked = False
+
 # Create Q&A
 question_text = "Were you satisfied with your purchase today?"
 
@@ -57,20 +64,25 @@ st.markdown(f"""
 
 col1, yes_col, col3, no_col, col5 = st.columns(5)
 yes = yes_col.button("YES", use_container_width=True)
-no = no_col.button("NO", use_container_width=True)
-
-placeholder = st.empty()
+no = no_col.button("NO", use_container_width=True, on_click=callback)
 
 if yes: 
-    get_data(answer="yes")
-    placeholder.success("Thank you for your feedback!")
+    get_data(answer="yes", feedback=None)
+    st.success("Thank you for your feedback!")
     load_data()
 ChangeButtonColour('YES', '#ffffff', '#4fbb6e')
 
-if no:
-    get_data(answer="no")
-    placeholder.success("Thank you for your feedback!")    
-    load_data()
+if no or st.session_state.button_clicked:
+    feedback = st.text_area("Please tell us why:")
+    submit = st.button("SUBMIT") 
+    
+    if submit and feedback:
+        get_data(answer="no", feedback=feedback)
+        st.session_state.button_clicked = False
+        st.success("Thank you for your feedback!")
+        load_data()
+    else: 
+        st.warning("Please provide your feedback before submitting.")
 ChangeButtonColour('NO', '#ffffff', '#e24b4b') 
 
     #timestamp = int(time.time())
