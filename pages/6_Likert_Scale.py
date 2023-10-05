@@ -59,7 +59,6 @@ st.markdown(f"""
 LIKERT = {0: "not likely", 1: "unlikely", 2: "neutral", 3: "likely", 4: "very likely"}
 LIKERT_TITLES = ["not likely", "unlikely", "neutral", "likely", "very likely"]
 
-
 image_files = [static_directory+"/not_likely.png", static_directory+"/unlikely.png", static_directory+"/neutral.png", static_directory+"/likely.png", static_directory+"/very_likely.png"]
 images = []
 
@@ -70,6 +69,7 @@ for file in image_files:
         
 clicked = clickable_images(
 images,
+LIKERT_TITLES,
 div_style={"display": "flex", "justify-content": "center"},
 img_style={"margin": "7%", "height": "30px"},
 )
